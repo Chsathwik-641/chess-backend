@@ -1,0 +1,10 @@
+{
+  "services": [
+    {
+      "name": "backend",
+      "type": "node",
+      "path": "./backend",
+      "env": "production"
+    }
+  ]
+}
