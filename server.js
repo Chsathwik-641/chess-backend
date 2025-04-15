@@ -4,8 +4,13 @@ const { v4: uuidv4 } = require("uuid");
 
 const app = express();
 const PORT = 5000;
-
-app.use(cors());
+app.use(
+  cors({
+    origin: "https://chess-alpha-gray.vercel.app",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 const games = {};
@@ -217,11 +222,16 @@ app.get("/game/:gameId/state", (req, res) => {
   const game = games[gameId];
   if (!game) return res.status(404).json({ error: "Game not found" });
 
+  const turn = game.getTurn();
+  const inCheck = game.isInCheck(turn);
+
   res.json({
     board: game.getBoard(),
-    turn: game.getTurn(),
+    turn,
+    check: inCheck,
   });
 });
+
 app.post("/game/:gameId/move", (req, res) => {
   const { gameId } = req.params;
   const { from, to, color } = req.body;
@@ -238,8 +248,11 @@ app.post("/game/:gameId/move", (req, res) => {
     return res.status(400).json({ error: result.error });
   }
 
+  result.check = game.isInCheck(game.getTurn());
+
   res.json(result);
 });
+
 app.listen(PORT, () => {
   console.log(`Chess server running at http://localhost:${PORT}`);
 });
